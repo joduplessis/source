@@ -9,6 +9,8 @@
       let SOURCE_GLOBAL_SUBSCRIBERS = []
       let SOURCE_GLOBAL_ACTIONS = []
 
+      // These are the usual Redux flavoured reducers
+      // Pass in a default state & return an updated on
       const user = (state = { name: "Jon Doe" }, action) => {
         switch (action.type) {
           case 'UPDATE_NAME':
@@ -27,16 +29,22 @@
         }
       }
 
+      // Boilerplate setup
       createReducers(user, page)
 
+      // General getState() goodness
       function getState(){
         return SOURCE_GLOBAL_STATE
       }
 
+      // This pushed the subscribers onto our array
+      // So each change notifies a subscriber
       function onStateUpdate(func) {
         SOURCE_GLOBAL_SUBSCRIBERS.push(func)
       }
 
+      // Create an array of reducer functions that we iterate over
+      // on each dispatch call
       function createReducers() {
         const reducers = []
         for (argument of arguments) reducers.push(argument)
@@ -44,25 +52,33 @@
         dispatch({ type: null, payload: null })
       }
 
+      // Push our action to the stack
+      // If it's the only one - process it
       function dispatch(action) {
         SOURCE_GLOBAL_ACTIONS.push(action)
-        if (SOURCE_GLOBAL_ACTIONS.length > 0) dispatchQueue()
+        if (SOURCE_GLOBAL_ACTIONS.length == 1) dispatchQueue()
       }
 
+      // Vanilla FIFO queue handling
       function dispatchQueue() {
         const nextAction = SOURCE_GLOBAL_ACTIONS[0]
 
+        // After process one, shift it off & reprocess the next action
         dispatchActionAcrossReducers(nextAction, () => {
           SOURCE_GLOBAL_ACTIONS.shift()
           if (SOURCE_GLOBAL_ACTIONS.length > 0) dispatchQueue()
         })
       }
 
+      // Each action is dispatched across the reducers here
+      // It creates a band new state object
+      // And then we can update the global state with the new one
+      // This also notifies subscribers of all individual change
       function dispatchActionAcrossReducers(action, callback) {
         let state = {}
         SOURCE_GLOBAL_REDUCERS.map(reducer => {
           const initialGlobalState = SOURCE_GLOBAL_STATE[reducer.name]
-          const initialState = initialGlobalState ? initialGlobalState : undefined
+          const initialState = initialGlobalState || undefined
           state[reducer.name] = reducer(initialState, action)
         })
         SOURCE_GLOBAL_STATE = state
@@ -70,6 +86,8 @@
         callback()
       }
 
+      // This is a subscriber - so we are notified of udpates
+      // ⚠️ This would be super cool with middleware & filters, etc.
       onStateUpdate(state => {
         console.log('Got a notification about a state update. New value: ', state)
       })
@@ -79,6 +97,7 @@
       dispatch({ type: 'UPDATE_NAME', payload: { name: 'Jo du Plessis' } })
       dispatch({ type: 'UPDATE_TITLE', payload: { title: 'The beginning...' } })
 
+      // Delay for realism (of course)
       setTimeout(() => {
         console.log('Checking global state again: ', getState())
       }, 1000)
