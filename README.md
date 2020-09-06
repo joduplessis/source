@@ -2,7 +2,7 @@
 
 A Redux inspired state management library, based on a Rx-flavoured subscriber model.
 
-> ⚠️ Warning! Don't use in production! None or all of the API's might changes. Strictly playground exercise material.
+> ⚠️ Warning! Don't use in production! None or all of the API's might change. Strictly playground exercise material.
 
 ## Define your reducers
 
