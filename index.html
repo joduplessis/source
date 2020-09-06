@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+    <script>
+      let SOURCE_GLOBAL_STATE = {}
+      let SOURCE_GLOBAL_REDUCERS = []
+      let SOURCE_GLOBAL_SUBSCRIBERS = []
+      let SOURCE_GLOBAL_ACTIONS = []
+
+      const user = (state = { name: "Jon Doe" }, action) => {
+        switch (action.type) {
+          case 'UPDATE_NAME':
+            return { ...state, name: action.payload.name }
+          default:
+            return state
+        }
+      }
+
+      const page = (state = { title: "Default" }, action) => {
+        switch (action.type) {
+          case 'UPDATE_TITLE':
+            return { ...state, title: action.payload.title }
+          default:
+            return state
+        }
+      }
+
+      createReducers(user, page)
+
+      function getState(){
+        return SOURCE_GLOBAL_STATE
+      }
+
+      function onStateUpdate(func) {
+        SOURCE_GLOBAL_SUBSCRIBERS.push(func)
+      }
+
+      function createReducers() {
+        const reducers = []
+        for (argument of arguments) reducers.push(argument)
+        SOURCE_GLOBAL_REDUCERS = reducers
+        dispatch({ type: null, payload: null })
+      }
+
+      function dispatch(action) {
+        SOURCE_GLOBAL_ACTIONS.push(action)
+        if (SOURCE_GLOBAL_ACTIONS.length > 0) dispatchQueue()
+      }
+
+      function dispatchQueue() {
+        const nextAction = SOURCE_GLOBAL_ACTIONS[0]
+
+        dispatchActionAcrossReducers(nextAction, () => {
+          SOURCE_GLOBAL_ACTIONS.shift()
+          if (SOURCE_GLOBAL_ACTIONS.length > 0) dispatchQueue()
+        })
+      }
+
+      function dispatchActionAcrossReducers(action, callback) {
+        let state = {}
+        SOURCE_GLOBAL_REDUCERS.map(reducer => {
+          const initialGlobalState = SOURCE_GLOBAL_STATE[reducer.name]
+          const initialState = initialGlobalState ? initialGlobalState : undefined
+          state[reducer.name] = reducer(initialState, action)
+        })
+        SOURCE_GLOBAL_STATE = state
+        SOURCE_GLOBAL_SUBSCRIBERS.map(cb => cb(action.payload))
+        callback()
+      }
+
+      onStateUpdate(state => {
+        console.log('Got a notification about a state update. New value: ', state)
+      })
+
+      console.log('Current global state: ', getState())
+
+      dispatch({ type: 'UPDATE_NAME', payload: { name: 'Jo du Plessis' } })
+      dispatch({ type: 'UPDATE_TITLE', payload: { title: 'The beginning...' } })
+
+      setTimeout(() => {
+        console.log('Checking global state again: ', getState())
+      }, 1000)
+    </script>
+  </body>
+</html>
