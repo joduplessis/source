@@ -1,10 +1,14 @@
-# Source
+# SourceX
 
 A Redux inspired state management library, based on a Rx-flavoured subscriber model.
 
 > ⚠️ Warning! Don't use in production! None or all of the API's might change. Strictly playground exercise material.
 
-## Define your reducers
+# Example usage
+
+All the code is in `index.html`.
+
+### Define your reducers
 
 ```
 const user = (state = { name: "Jon Doe" }, action) => {
@@ -28,14 +32,14 @@ const page = (state = { title: "Default" }, action) => {
 createReducers(user, page)
 ```
 
-## Subscribe to changes
+### Subscribe to changes
 ```
 onStateUpdate(state => {
   console.log('Got a notification about a state update. New value: ', state)
 })
 ```
 
-## Dispatch updates
+### Dispatch updates
 ```
 dispatch({ type: 'UPDATE_NAME', payload: { name: 'Jo du Plessis' } })
 dispatch({ type: 'UPDATE_TITLE', payload: { title: 'The beginning...' } })
